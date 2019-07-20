@@ -14,11 +14,21 @@ async function logIn(){
     osmosis
         .get(needLink)
         .find('.form-horizontal')
-        .set('form')
+        .then((context, data, next) => {
+            let field = context.querySelector('#Email');
+            field.value = 'm.ectuser@gmail.com';
+            let pass = context.querySelector('#Password');
+            pass.value = 'iwantsomethingjustlikethis'
+            next(context, data);
+        })
+        .click('.btn.btn-success')
+        // .find('#Email')
+        .find('body').set('body')
         .log(console.log)
         .data((data)=>{
             console.log(data)
         })
+
 }
 
 async function getUrlToLogIn(){
