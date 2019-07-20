@@ -1,64 +1,92 @@
-console.log("Hello world!");
-const osmosis = require('osmosis');
-var list = []
-var needLink
-// var fun = await console.log(needLink)
+const puppeteer = require('puppeteer');
 (async () => {
-    await getUrlToLogIn();
-    console.log(needLink)
-    await logIn()
-})()
+    var results = []
+    try{
+        const browser = await puppeteer.launch({headless: false});
+        const page = await browser.newPage();
+        await page.goto('https://accounts.tsu.ru/Account/Login2/?applicationId=1015');
 
-async function logIn(){
-    return await
-    osmosis
-        .get(needLink)
-        .find('.form-horizontal')
-        .then((context, data, next) => {
-            let field = context.querySelector('#Email');
-            field.value = 'm.ectuser@gmail.com';
-            let pass = context.querySelector('#Password');
-            pass.value = 'iwantsomethingjustlikethis'
-            next(context, data);
-        })
-        .click('.btn.btn-success')
-        // .find('#Email')
-        .find('body').set('body')
-        .log(console.log)
-        .data((data)=>{
-            console.log(data)
-        })
+        await page.$eval('#Email', el => el.value = 'm.ectuser@gmail.com');
+        await page.$eval('#Password', el => el.value = 'iwantsomethingjustlikethis');
+        await page.$eval('.btn.btn-success', el => el.click());
 
+        await page.goto('https://ejudge.kreosoft.ru/user/results');
+        var trs = await page.$$('table[border="1"] > tbody > tr');
+        // console.log(td)
+        // try{
+        //     const name = await tdName.$eval('a', e => e.innerText);
+        //     console.log(name)
+        //     var link = await tdLinkToCodesPage.$eval('a', e => e.href);
+        //     console.log(link)
+        //     var code = await getCode(page, link)
+
+        //     await page.goBack();
+        //     await page.goBack();
+
+
+        // }catch(e){
+        //     console.log(e)
+        // }
+
+        for (tr of trs){
+            await page.waitForNavigation();
+            var tds = await tr.$$('td')
+            await console.log(tds.length)
+            var tdName = await tds[1];
+            var tdLinkToCodesPage = await tds[2];
+            // console.log(td)
+            try{
+                const name = await tdName.$eval('a', e => e.innerText);
+                await console.log(name)
+                var link = await tdLinkToCodesPage.$eval('a', e => e.href);
+                // console.log(link)
+                var code = await getCode(page, link)
+                await console.log(code)
+                
+                // results.push({
+                //     name: name,
+                // })
+
+                await page.goBack();
+                await page.goBack();
+    
+    
+            }catch(e){
+                // console.log(e)
+            }
+        }
+
+
+
+    } catch(err){
+        console.log(err);
+    }
+})();
+
+async function getCode(page, url){
+    await page.goto(url);
+    var trs = await page.$$('body > div > div > div > table > tbody > tr');
+    for (tr of trs){
+        var tds = await tr.$$('td')
+        await console.log(tds.length)
+        var tdVerdict = await tds[3]
+        var tdLinkToCode = await tds[5]
+        try {
+            var verdict = await tdVerdict.$eval('span', e => e.innerText);
+            if (verdict === 'Accepted'){
+                var linkToCode = await tdLinkToCode.$eval('a', e => e.href);
+                await console.log(linkToCode)
+                
+                await page.goto(linkToCode)
+
+                var code = await page.$eval('code', e => e.innerText);
+                return await code;
+            }
+
+
+        } catch (error) {
+            // console.log(error)
+        }
+    }
+    return 'no data'
 }
-
-async function getUrlToLogIn(){
-    return await
-    osmosis
-        .get('https://ejudge.kreosoft.ru/') 
-        // .find('.nav.navbar-nav.navbar-right')
-        .find('li a.menu__link')
-        .set({
-            'link' : '@href'
-        })
-        .data((data)=>{
-            // console.log(data)
-            list.push(data)
-        })
-        .log(console.log)
-        .done((data)=>{
-            console.log(list)
-            needLink = list[6].link
-        })
-}
-
-// osmosis
-//     .get('http://apps.shopify.com/categories/sales')
-//     .find('.resourcescontent ul.app-card-grid')
-//     .follow('li a[href]')
-//     .find('.resourcescontent')
-//     .set({
-//         'appname': '.app-header__details h1',
-//         'email': '#AppInfo table tbody tr:nth-child(2) td > a'
-//         })
-//     .log(console.log)   // включить логи
-//     .data(console.log)
