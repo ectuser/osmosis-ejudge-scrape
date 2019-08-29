@@ -3,7 +3,7 @@ const fs = require('fs');
 (async () => {
     let results = []
     try{
-        const browser = await puppeteer.launch({headless: true});
+        const browser = await puppeteer.launch({headless: false});
         const page = await browser.newPage();
         await page.goto('https://accounts.tsu.ru/Account/Login2/?applicationId=1015');
 
@@ -14,24 +14,7 @@ const fs = require('fs');
         await page.goto('https://ejudge.kreosoft.ru/user/results');
         let trs = await page.$$('table[border="1"] > tbody > tr');
         console.log(trs.length);
-        // console.log(trs);
-        // console.log(td)
-        // try{
-        //     const name = await tdName.$eval('a', e => e.innerText);
-        //     console.log(name)
-        //     let link = await tdLinkToCodesPage.$eval('a', e => e.href);
-        //     console.log(link)
-        //     let code = await getCode(page, link)
-
-        //     await page.goBack();
-        //     await page.goBack();
-
-
-        // }catch(e){
-        //     console.log(e)
-        // }
-
-        // for (tr of trs){
+        
         for (let i = 1; i < trs.length; i++){
             await console.log(i, "we are here")
             let tr = await trs[i]
@@ -47,10 +30,7 @@ const fs = require('fs');
                 // console.log(link)
 
                 let values = await getCode(page, link);
-
-                if (values[0] === "no data"){
-                    continue;
-                }
+                console.log(values);
 
                 let code = await values[0];
                 await console.log(code)
@@ -61,29 +41,8 @@ const fs = require('fs');
                 await console.log(fileRoute);
                 await fs.writeFileSync(fileRoute, code)
 
-                await page.goBack();
-                await page.goBack();
-                // await page.goto('https://ejudge.kreosoft.ru/user/results');
+                await page.goto('https://ejudge.kreosoft.ru/user/results');
                 trs = await page.$$('table[border="1"] > tbody > tr');
-
-                // tr = await trs[3 + 1]
-                // await console.log('here1')
-                // tds = await tr.$$('td')
-                // await console.log('here2')
-                // tdName = await tds[1];
-                // await console.log('here3', tdName.innerHTML)
-                // tdLinkToCodesPage = await tds[2];
-                // await console.log('here4')
-                // // console.log(td)
-                // name = await tdName.$eval('a', e => e.innerText);
-                // await console.log('here5')
-                // await console.log(name)
-                // link = await tdLinkToCodesPage.$eval('a', e => e.href);
-                // // console.log(link)
-                // code = await getCode(page, link)
-                // await console.log(code)
-                // trs = await page.$$('table[border="1"] > tbody > tr');
-                // // console.log(trs);
     
             }catch(e){
                 // console.log(e)
@@ -126,10 +85,10 @@ async function getCode(page, url){
 
         } catch (error) {
             // console.log(error)
-            return ["no data", "no data"];
+            // return await ["no data", "no data"];
         }
     }
-    return ["no data", "no data"];
+    return await ["no data", "no data"];
 
 }
 
